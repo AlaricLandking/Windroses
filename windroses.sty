@@ -1,0 +1,119 @@
+% This package facilitates the construction of a windrose, and requires the packages tikz, xcolor, pgf and csvsimple to also be loaded.
+
+% Inside a tikzpicture environment, the commands \background and \legend will set up a labelled degree circle and legend. The command \central, used as the final command in the environment, will create a white circle at the centre of the wind rose.
+
+% The input for the windrose must be a .csv file, with headings "Direction, LightAir, Light, Gentle, Moderate, Fresh, Strong, NearGale, Gale". The Direction column must be the numbers 10-360, and each wind strength column must contain the percentage of the total number of observations that give a wind of that strength and direction, to two decimal places (e.g. 4.35% of all wind observations are 040 and Fresh).
+
+% In the unlikely event that "Storm" is required, use the \spoke{\dir}{\rad}{\colour} command just after the \background and \legend commands in the main file, with \dir being degrees true (e.g. 30), \rad being 0.5 + ALL percentages from lower wind speeds in that direction, and \colour being darkpurple.
+
+
+%%%%%%%%%%%%%%%%%%%% Sets up required colours %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\definecolor{x11gray}{rgb}{0.75, 0.75, 0.75}
+\definecolor{darkgray}{rgb}{0.25, 0.25, 0.25}
+\definecolor{bluegreen}{rgb}{0.0, 0.87, 0.87}
+\definecolor{aoe}{rgb}{0.0, 0.5, 0.0}
+\definecolor{gold}{rgb}{1.0, 0.84, 0.0}
+\definecolor{orangepeel}{rgb}{1.0, 0.62, 0.0}
+\definecolor{rose}{rgb}{1.0, 0.2, 0.8}
+\definecolor{darkpurple}{rgb}{0.5, 0.0, 0.5}
+
+%%%%%%%%%%%%%%%%%%%% Sets up required drawing commands %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\spoke}[3]{%true angle, radius, colour
+    \fill[#3] (450-#1-5:0) -- (450-#1-5:#2) arc[start angle=450-#1-5,end angle=450-#1+5,radius=#2];
+    }
+
+\newcommand{\allspoke}[9]{%true angle, smallest to largest PERCENTS (0 if none)
+    % DOES NOT HANDLE STORM LEVEL! DO THAT MANUALLY BEFORE THIS ONE USING THE SPOKE COMMAND!
+    \spoke{#1}{#9+#8+#7+#6+#5+#4+#3+#2+0.5}{red} \spoke{#1}{#8+#7+#6+#5+#4+#3+#2+0.5}{orangepeel} \spoke{#1}{#7+#6+#5+#4+#3+#2+0.5}{gold} \spoke{#1}{#6+#5+#4+#3+#2+0.5}{aoe} \spoke{#1}{#5+#4+#3+#2+0.5}{blue} \spoke{#1}{#4+#3+#2+0.5}{bluegreen} \spoke{#1}{#3+#2+0.5}{darkgray} \spoke{#1}{#2+0.5}{x11gray}
+    }
+
+%%%%%%%%%%%%%%% Sets up runway, sea and kata commands %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\plotfirstrunway}{
+    \ifthenelse{\firstrunway = 0}
+    {}
+    {\draw[ultra thick] (270-\firstrunway:10.5) -- (450-\firstrunway:10.5)}
+    ;
+    }
+
+\newcommand{\plotsecondrunway}{
+    \ifthenelse{\secondrunway = 0}
+    {}
+    {\draw[ultra thick] (270-\secondrunway:10.5) -- (450-\secondrunway:10.5)}
+    ;
+    }
+
+\newcommand{\plotseabreeze}{
+    \ifthenelse{\seabreeze = 0}
+    {}
+    {\draw[ultra thick, rose] (450-\seabreeze:0) -- (450-\seabreeze:10.5);}
+    }
+
+\newcommand{\plotkatabatic}{
+    \ifthenelse{\katabatic = 0}
+    {}
+    {\draw[ultra thick, blue] (450-\katabatic:0) -- (450-\katabatic:10.5);}
+    }
+
+%%%%%%%%%%%%%%%%%%%% Sets up legend command %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\legend}{% no inputs
+    \node[fill=x11gray, draw, minimum height=0.35cm, minimum width=0.35cm, label=east:Light Air (1-3KT)] at (13,6) {};
+\node[fill=darkgray, draw, minimum height=0.35cm, minimum width=0.35cm, label=east:Light (4-6KT)] at (13,5) {};
+\node[fill=bluegreen, draw, minimum height=0.35cm, minimum width=0.35cm, label=east:Gentle (7-10KT)] at (13,4) {};
+\node[fill=blue, draw, minimum height=0.35cm, minimum width=0.35cm, label=east:Moderate (11-16KT)] at (13,3) {};
+\node[fill=aoe, draw, minimum height=0.35cm, minimum width=0.35cm, label=east:Fresh (17-21KT)] at (13,2) {};
+\node[fill=gold, draw, minimum height=0.35cm, minimum width=0.35cm, label=east:Strong (22-27KT)] at (13,1) {};
+\node[fill=orangepeel, draw, minimum height=0.35cm, minimum width=0.35cm, label=east:Near Gale (28-33KT)] at (13,0) {};
+\node[fill=red, draw, minimum height=0.35cm, minimum width=0.35cm, label=east:Gale (34-47KT)] at (13,-1) {};
+\node[fill=darkpurple, draw, minimum height=0.35cm, minimum width=0.35cm, label=east:Storm ($\geq$48KT)] at (13,-2) {};
+\node[fill=black, fill, inner sep=0, minimum height=0.06cm, minimum width=0.35cm, label=east:Runway] at (13,-4) {};
+\node[fill=rose, fill, inner sep=0, minimum height=0.06cm, minimum width=0.35cm, label=east:Seabreeze] at (13,-5) {};
+\node[fill=blue, fill, inner sep=0, minimum height=0.06cm, minimum width=0.35cm, label=east:Land Breeze] at (13,-6) {};
+    }
+
+%%%%%%%%%%%%%%%%%% Sets up background command %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\background}{
+    % magnitude circles
+\foreach \a in {5.5,10.5}
+    \draw[] (0,0) circle (\a);
+% degree spokes
+\foreach \b in {10,30,...,359}
+    \draw[] (\b:0) -- (\b:10.5);
+% degree labels
+\foreach \a [evaluate=\a as \an using int(90-\a)] in {10,30,...,70}
+      \draw (\a: 11.4) node {$\an^\circ$};
+\foreach \a [evaluate=\a as \an using int(450-\a)] in {350,330,...,80}
+        \draw (\a: 11.4) node {$\an^\circ$};
+    }
+
+%%%%%%%%%%%%%%%%% Sets up central circle %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\central}{\draw[fill=white] (0,0) circle (0.5);
+    }
+
+%%%%%%%%%%%%%%%% Sets up percentage labels %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\percentagelabels}[1]{% angle
+\node[align=center, fill=white, circle, inner sep=0mm](inner) at ({270-#1}:-5.5){$\perlabelhalf\%$};
+\node[align=center, fill=white,circle, inner sep=0mm](outer) at ({270-#1}:-10.5){$\perlabel\%$};
+    
+}
+
+%%%%%%%%%%%%%%%%%%%%%% Sets up body plots %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\stormplot}{
+\csvreader[head to column names]{\stormfile}{}{\spoke{\Direction}{\Use}{darkpurple}
+}
+}
+
+\newcommand{\stationplot}{
+\csvreader[head to column names]{\stationfile}{}{
+\allspoke{\Direction}{\Light}{\LightAir}{\Gentle}{\Moderate}{\Fresh}{\Strong}{\NearGale}{\Gale}
+}
+}
+
+%%%%%%%%%%%%%%%%% Sets up title and caption %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\rosetitle}{
+    \node[align=center](title) at (0,13){\LARGE Wind Rose for \stationcode{}\\ \startdate{} to \enddate{} (\timezone)};
+}
+
+\newcommand{\rosecaption}{
+    \node[align=center](caption) at (0,-12.5){ Calm: $\calm\%$ \hspace{3mm}  Max DDD Freq: $\maxDDD\%$ \hspace{3mm} Total Obs: $\totalobs$};
+}

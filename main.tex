@@ -1,0 +1,46 @@
+\documentclass{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage{csvsimple, tikz, xcolor, pgf, windroses}
+
+\def\stationfile{oha.csv}   % set this to the name of your station file
+\def\stormfile{ohastorm.csv}   % set this to the name of your storm file
+
+\def\calm{0.2}      % set this to the percentage of calm
+\def\maxDDD{7.8}    % set this to the percentage of the max directional frequency
+\def\perlabel{8}    % set this to the next integer larger than the max directional frequency
+\def\perlabelhalf{4}     % set this to half the value of \perlabel
+\def\totalobs{106934}   % set this to the total number of observations
+\def\stationcode{OHA}   % set this to the station code or name
+\def\startdate{04-Nov-2007} % set this to the start date
+\def\enddate{21-Jan-2020}   % set this to the end date
+\def\timezone{UTC}  % set this to the timezone (e.g. UTC)
+
+\def\perangle{180} % set this to the angle you want the percentage labels to be placed
+
+\def\firstrunway{110} % set this to the true angle of the runway, or 0 if not applicable. If the runway angle is given as two angles, such as 020/200, use the larger number only.
+\def\secondrunway{0} % set this to the true angle of the runway, or 0 if not applicable. If the runway angle is given as two angles, such as 020/200, use the larger number only.
+\def\seabreeze{30}   % set this to the true angle of the seabreeze, or 0 if not applicable
+\def\katabatic{250}   % set this to the true angle of the land breeze, or 0 if not applicable
+
+\begin{document}
+\fbox{
+\begin{tikzpicture}[scale=0.5]
+\background
+\legend
+\stormplot
+\stationplot
+
+\plotfirstrunway
+\plotsecondrunway
+\plotseabreeze
+\plotkatabatic
+
+\percentagelabels{\perangle}
+
+\rosetitle
+\rosecaption
+
+\central
+\end{tikzpicture}
+}
+\end{document}
